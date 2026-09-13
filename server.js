@@ -433,9 +433,19 @@ app.post('/api/complaints', async (req, res) => {
     }
 });
 
-// Start the server and initialize the DB
-app.listen(PORT, async () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-    await db.initDb();
+// Root route handler for index.html
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
+
+// Start the server and initialize DB if running directly
+if (require.main === module || process.env.NODE_ENV !== 'production') {
+    app.listen(PORT, async () => {
+        console.log(`Server is running on http://localhost:${PORT}`);
+        await db.initDb();
+    });
+}
+
+// Export app for Vercel & serverless environments
+module.exports = app;
 
