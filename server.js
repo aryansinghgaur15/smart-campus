@@ -154,8 +154,14 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files from the current directory (for HTML, CSS, Images)
+// Serve static files from current directory
 app.use(express.static(__dirname));
+
+// Explicit route handler for style.css (ensures style.css is served on Vercel & serverless platforms)
+app.get('/style.css', (req, res) => {
+    res.setHeader('Content-Type', 'text/css');
+    res.sendFile(path.join(__dirname, 'style.css'));
+});
 
 // In-memory fallback dataset for lost/found items
 let memoryItems = [
