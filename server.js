@@ -249,7 +249,7 @@ let memoryItems = [
 app.get('/api/items', async (req, res) => {
     try {
         if (db.pool) {
-            const [rows] = await db.pool.query('SELECT * FROM items ORDER BY created_at DESC LIMIT 50');
+            const { rows } = await db.query('SELECT * FROM items ORDER BY created_at DESC LIMIT 50');
             if (rows && rows.length > 0) return res.json(rows);
         }
         res.json(memoryItems);
@@ -290,20 +290,19 @@ app.post('/api/items', async (req, res) => {
 
         if (db.pool) {
             try {
-                const query = `
+                await db.query(`
                     INSERT INTO items (
                         report_type, title, category, location, date_reported, 
                         contact_info, student_name, student_id, image_url, description
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                `;
-                const values = [
-                    report_type, title, category, location, date_reported, 
-                    contact_info, student_name || null, student_id || null, 
-                    image_url || null, description || null
-                ];
-                await db.pool.query(query, values);
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                    [
+                        report_type, title, category, location, date_reported, 
+                        contact_info, student_name || null, student_id || null, 
+                        image_url || null, description || null
+                    ]
+                );
             } catch (dbErr) {
-                console.log('[DB] Saving item to memory store (MySQL error):', dbErr.message);
+                console.log('[DB] Saving item to memory store (DB error):', dbErr.message);
             }
         }
 
@@ -367,7 +366,7 @@ let nextTicketId = 1046;
 app.get('/api/complaints', async (req, res) => {
     try {
         if (db.pool) {
-            const [rows] = await db.pool.query('SELECT * FROM complaints ORDER BY id DESC');
+            const { rows } = await db.query('SELECT * FROM complaints ORDER BY id DESC');
             if (rows && rows.length > 0) {
                 return res.json(rows);
             }
@@ -414,19 +413,18 @@ app.post('/api/complaints', async (req, res) => {
 
         if (db.pool) {
             try {
-                const query = `
+                await db.query(`
                     INSERT INTO complaints (
                         ticket_number, student_name, email, category, urgency,
                         location, room_number, title, description, status, date_reported
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                `;
-                const values = [
-                    ticket_number, student_name, email, category, urgency,
-                    location, room_number, title, description, status, date_reported
-                ];
-                await db.pool.query(query, values);
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                    [
+                        ticket_number, student_name, email, category, urgency,
+                        location, room_number, title, description, status, date_reported
+                    ]
+                );
             } catch (dbErr) {
-                console.log('[DB] Saving complaint to in-memory store (MySQL error):', dbErr.message);
+                console.log('[DB] Saving complaint to in-memory store (DB error):', dbErr.message);
             }
         }
 
