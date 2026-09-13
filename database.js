@@ -1,38 +1,39 @@
 const mysql = require('mysql2');
 
-// Configure MySQL connection pool
-const pool = mysql.createPool({
-    host: 'localhost',
-    user: 'root', // Change to your MySQL username
-    password: '', // Change to your MySQL password
-    database: 'smart_campus', // We will create this database if it doesn't exist
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
-});
+// Create pool safely — will be null if MySQL env vars are missing
+let promisePool = null;
 
-// A promise wrapper for the pool
-const promisePool = pool.promise();
+try {
+    const host = process.env.MYSQL_HOST || process.env.DB_HOST || 'localhost';
+    const user = process.env.MYSQL_USER || process.env.DB_USER || 'root';
+    const password = process.env.MYSQL_PASS || process.env.DB_PASS || '';
+    const database = process.env.MYSQL_DB || process.env.DB_NAME || 'smart_campus';
+
+    const pool = mysql.createPool({
+        host,
+        user,
+        password,
+        database,
+        waitForConnections: true,
+        connectionLimit: 5,
+        queueLimit: 0,
+        connectTimeout: 5000
+    });
+
+    promisePool = pool.promise();
+    console.log('[DB] MySQL pool configured. Will attempt connection on first query.');
+} catch (err) {
+    console.warn('[DB] Could not configure MySQL pool. Running in memory-only mode:', err.message);
+    promisePool = null;
+}
 
 // Function to initialize the database
 async function initDb() {
+    if (!promisePool) {
+        console.warn('[DB] Skipping initDb — no MySQL pool available. Running in memory-only mode.');
+        return;
+    }
     try {
-        // Create database if not exists using a raw connection first
-        const rawConnection = await mysql.createConnection({
-            host: 'localhost',
-            user: 'root', // Change as needed
-            password: '' // Change as needed
-        }).promise();
-        
-        await rawConnection.query(`CREATE DATABASE IF NOT EXISTS smart_campus;`);
-        await rawConnection.end();
-
-        console.log("Connected to MySQL Database: smart_campus");
-        
-        // Execute the schema to ensure tables exist
-        // Note: For ENUMs to work properly, we need to create them. 
-        // MySQL does not use CREATE TYPE ... AS ENUM. Instead, ENUMs are defined in the column.
-        // Let's create the users table
         await promisePool.query(`
             CREATE TABLE IF NOT EXISTS users (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -43,7 +44,6 @@ async function initDb() {
             );
         `);
 
-        // Let's create the items table (adapting the ENUMs for MySQL)
         await promisePool.query(`
             CREATE TABLE IF NOT EXISTS items (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -60,12 +60,10 @@ async function initDb() {
                 description TEXT,
                 status ENUM('active', 'resolved') DEFAULT 'active',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
             );
         `);
 
-        // Create complaints table
         await promisePool.query(`
             CREATE TABLE IF NOT EXISTS complaints (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -84,9 +82,9 @@ async function initDb() {
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
             );
         `);
-        console.log("Database tables verified/created successfully.");
+        console.log('[DB] Database tables verified/created successfully.');
     } catch (error) {
-        console.error("Database initialization failed. Please ensure MySQL is running on localhost and credentials (root / empty password) are correct.", error);
+        console.error('[DB] Database initialization failed. Running in memory-only mode.', error.message);
     }
 }
 

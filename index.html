@@ -723,6 +723,89 @@ footer {
     color: var(--text-main);
 }
 
+/* Toast notification */
+.toast-container {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    pointer-events: none;
+}
+.toast {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1rem 1.25rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    min-width: 300px;
+    max-width: 400px;
+    pointer-events: all;
+    transform: translateX(120%);
+    opacity: 0;
+    transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), opacity 0.35s ease;
+}
+.toast.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+.toast.hide {
+    transform: translateX(120%);
+    opacity: 0;
+}
+.toast-icon {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+}
+.toast-success .toast-icon { background: #dcfce7; color: #16a34a; }
+.toast-error .toast-icon   { background: #fee2e2; color: #dc2626; }
+.toast-info .toast-icon    { background: #dbeafe; color: #2563eb; }
+.toast-content strong {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 0.2rem;
+}
+.toast-content p {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+.toast-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 1rem;
+    margin-left: auto;
+    padding: 0;
+    flex-shrink: 0;
+    line-height: 1;
+}
+.toast-close:hover { color: var(--text-main); }
+
+/* Loading spinner for cards */
+.loading-state {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+.loading-state i { font-size: 1.5rem; margin-bottom: 0.5rem; display: block; }
+
 @media (max-width: 900px) {
     .complaints-grid {
         grid-template-columns: 1fr;
@@ -753,6 +836,15 @@ footer {
     }
     .nav-links {
         display: none;
+    }
+    .toast-container {
+        bottom: 1rem;
+        right: 1rem;
+        left: 1rem;
+    }
+    .toast {
+        min-width: unset;
+        max-width: 100%;
     }
 }
     </style>
@@ -1137,6 +1229,9 @@ footer {
         </div>
     </div>
 
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
     <footer id="contact">
         <div class="footer-container">
             <div class="footer-col">
@@ -1161,6 +1256,43 @@ footer {
     </footer>
 
     <script>
+        // ============================================================
+        // Toast Notification System
+        // ============================================================
+        function showToast(title, message, type = 'success', duration = 5000) {
+            const container = document.getElementById('toastContainer');
+            const icons = {
+                success: 'fa-circle-check',
+                error: 'fa-circle-xmark',
+                info: 'fa-circle-info'
+            };
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `
+                <div class="toast-icon"><i class="fa-solid ${icons[type] || icons.success}"></i></div>
+                <div class="toast-content">
+                    <strong>${title}</strong>
+                    <p>${message}</p>
+                </div>
+                <button class="toast-close" onclick="dismissToast(this.parentElement)">&times;</button>
+            `;
+            container.appendChild(toast);
+            // Trigger animation
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => toast.classList.add('show'));
+            });
+            const timer = setTimeout(() => dismissToast(toast), duration);
+            toast._timer = timer;
+            return toast;
+        }
+        function dismissToast(toast) {
+            if (!toast) return;
+            clearTimeout(toast._timer);
+            toast.classList.remove('show');
+            toast.classList.add('hide');
+            setTimeout(() => toast.remove(), 400);
+        }
+
         let currentImageSrc = '';
 
         function filterItems() {
@@ -1291,14 +1423,21 @@ footer {
                 });
 
                 if (response.ok) {
+                    const data = await response.json();
                     closeReportModal();
-                    await loadItems(); // Refresh the list
+                    await loadItems();
+                    const type = payload.report_type === 'found' ? 'Found' : 'Lost';
+                    showToast(
+                        `${type} Item Reported!`,
+                        `"${payload.title}" has been submitted successfully.`,
+                        'success'
+                    );
                 } else {
-                    alert('Failed to submit report. Please try again.');
+                    showToast('Submission Failed', 'Could not submit your report. Please try again.', 'error');
                 }
             } catch (error) {
                 console.error('Error submitting form:', error);
-                alert('An error occurred. Make sure the backend server is running.');
+                showToast('Network Error', 'Could not reach the server. Please check your connection.', 'error');
             } finally {
                 submitBtn.textContent = originalText;
                 submitBtn.disabled = false;
@@ -1306,16 +1445,17 @@ footer {
         }
 
         async function loadItems() {
+            const foundList = document.getElementById('foundList');
+            const lostList = document.getElementById('lostList');
             try {
+                foundList.innerHTML = '<div class="loading-state"><i class="fa-solid fa-spinner fa-spin"></i>Loading items...</div>';
+                lostList.innerHTML = '<div class="loading-state"><i class="fa-solid fa-spinner fa-spin"></i>Loading items...</div>';
+
                 const response = await fetch('/api/items');
                 if (!response.ok) throw new Error('Failed to fetch items');
                 
                 const items = await response.json();
                 
-                const foundList = document.getElementById('foundList');
-                const lostList = document.getElementById('lostList');
-                
-                // Keep the structural HTML but we will replace cards
                 foundList.innerHTML = '';
                 lostList.innerHTML = '';
 
@@ -1409,13 +1549,19 @@ footer {
                     const data = await response.json();
                     closeComplaintModal();
                     await loadComplaints();
-                    alert(`Complaint ${data.complaint ? data.complaint.ticket_number : ''} lodged successfully!\nNotification dispatched to Administrative Email ID: ${data.admin_email || 'admin@campus.edu'}`);
+                    const ticketNum = data.complaint ? data.complaint.ticket_number : '';
+                    showToast(
+                        `Complaint ${ticketNum} Lodged!`,
+                        `Your maintenance request has been submitted and dispatched to the admin.`,
+                        'success',
+                        6000
+                    );
                 } else {
-                    alert('Failed to submit complaint. Please try again.');
+                    showToast('Submission Failed', 'Could not lodge your complaint. Please try again.', 'error');
                 }
             } catch (error) {
                 console.error('Error submitting complaint:', error);
-                alert('An error occurred submitting complaint.');
+                showToast('Network Error', 'Could not reach the server. Please check your connection.', 'error');
             } finally {
                 submitBtn.textContent = originalText;
                 submitBtn.disabled = false;

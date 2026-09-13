@@ -248,8 +248,10 @@ let memoryItems = [
 // API Endpoint to get all items
 app.get('/api/items', async (req, res) => {
     try {
-        const [rows] = await db.pool.query('SELECT * FROM items ORDER BY created_at DESC LIMIT 50');
-        if (rows && rows.length > 0) return res.json(rows);
+        if (db.pool) {
+            const [rows] = await db.pool.query('SELECT * FROM items ORDER BY created_at DESC LIMIT 50');
+            if (rows && rows.length > 0) return res.json(rows);
+        }
         res.json(memoryItems);
     } catch (error) {
         res.json(memoryItems);
@@ -286,21 +288,23 @@ app.post('/api/items', async (req, res) => {
             description: description || null
         };
 
-        try {
-            const query = `
-                INSERT INTO items (
+        if (db.pool) {
+            try {
+                const query = `
+                    INSERT INTO items (
+                        report_type, title, category, location, date_reported, 
+                        contact_info, student_name, student_id, image_url, description
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                `;
+                const values = [
                     report_type, title, category, location, date_reported, 
-                    contact_info, student_name, student_id, image_url, description
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            `;
-            const values = [
-                report_type, title, category, location, date_reported, 
-                contact_info, student_name || null, student_id || null, 
-                image_url || null, description || null
-            ];
-            await db.pool.query(query, values);
-        } catch (dbErr) {
-            console.log("Saving item to memory store");
+                    contact_info, student_name || null, student_id || null, 
+                    image_url || null, description || null
+                ];
+                await db.pool.query(query, values);
+            } catch (dbErr) {
+                console.log('[DB] Saving item to memory store (MySQL error):', dbErr.message);
+            }
         }
 
         memoryItems.unshift(newItem);
@@ -362,9 +366,11 @@ let nextTicketId = 1046;
 // API Endpoint to get all complaints
 app.get('/api/complaints', async (req, res) => {
     try {
-        const [rows] = await db.pool.query('SELECT * FROM complaints ORDER BY id DESC');
-        if (rows && rows.length > 0) {
-            return res.json(rows);
+        if (db.pool) {
+            const [rows] = await db.pool.query('SELECT * FROM complaints ORDER BY id DESC');
+            if (rows && rows.length > 0) {
+                return res.json(rows);
+            }
         }
         res.json(memoryComplaints);
     } catch (error) {
@@ -406,20 +412,22 @@ app.post('/api/complaints', async (req, res) => {
             date_reported
         };
 
-        try {
-            const query = `
-                INSERT INTO complaints (
+        if (db.pool) {
+            try {
+                const query = `
+                    INSERT INTO complaints (
+                        ticket_number, student_name, email, category, urgency,
+                        location, room_number, title, description, status, date_reported
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                `;
+                const values = [
                     ticket_number, student_name, email, category, urgency,
                     location, room_number, title, description, status, date_reported
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            `;
-            const values = [
-                ticket_number, student_name, email, category, urgency,
-                location, room_number, title, description, status, date_reported
-            ];
-            await db.pool.query(query, values);
-        } catch (dbErr) {
-            console.log("Saving complaint to in-memory store (MySQL offline)");
+                ];
+                await db.pool.query(query, values);
+            } catch (dbErr) {
+                console.log('[DB] Saving complaint to in-memory store (MySQL error):', dbErr.message);
+            }
         }
 
         memoryComplaints.unshift(newComplaint);
@@ -444,8 +452,8 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Start the server and initialize DB if running directly
-if (require.main === module || process.env.NODE_ENV !== 'production') {
+// Start the server when running locally
+if (require.main === module) {
     app.listen(PORT, async () => {
         console.log(`Server is running on http://localhost:${PORT}`);
         await db.initDb();
