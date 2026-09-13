@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Campus - Lost & Found</title>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <div class="nav-container">
+            <a href="#" class="brand-logo">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div class="brand-text">
+                    <span>AVVIARE</span>
+                    <h1>SMART CAMPUS</h1>
+                </div>
+            </a>
+            <ul class="nav-links">
+                <li><a href="#" class="active">Home</a></li>
+                <li><a href="#lost-found">Lost & Found</a></li>
+                <li><a href="#maintenance">Complaints & Maintenance</a></li>
+                <li><a href="#contact">Contact Support</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero-banner">
+            <h2 class="hero-title">Welcome to Smart Campus Portal</h2>
+            <p class="hero-subtitle">Your central hub to report missing items, register found belongings, or request campus maintenance for AC, Wi-Fi, and cleaning services.</p>
+            <div class="hero-actions">
+                <button class="btn btn-found" onclick="openReportModal('found')">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span>REPORT FOUND ITEM</span>
+                </button>
+                <button class="btn btn-lost" onclick="openReportModal('lost')">
+                    <i class="fa-solid fa-circle-xmark"></i>
+                    <span>REPORT LOST ITEM</span>
+                </button>
+                <button class="btn btn-complaint" onclick="openComplaintModal()">
+                    <i class="fa-solid fa-wrench"></i>
+                    <span>LODGE MAINTENANCE COMPLAINT</span>
+                </button>
+            </div>
+        </section>
+
+        <section class="search-filter-card">
+            <div class="search-filter-grid">
+                <div class="filter-group">
+                    <label class="filter-label">Search Keywords</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="searchInput" class="search-input" placeholder="Search AirPods, keys, ID..." onkeyup="filterItems()">
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Category</label>
+                    <select id="categoryFilter" class="filter-select" onchange="filterItems()">
+                        <option value="all">All Categories</option>
+                        <option value="electronics">Electronics</option>
+                        <option value="accessories">Keys & Accessories</option>
+                        <option value="id">IDs & Documents</option>
+                        <option value="bags">Bags & Wallets</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Date</label>
+                    <select id="dateFilter" class="filter-select" onchange="filterItems()">
+                        <option value="all">Anytime</option>
+                        <option value="today">Today</option>
+                        <option value="week">This Week</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Location (Campus Areas)</label>
+                    <select id="locationFilter" class="filter-select" onchange="filterItems()">
+                        <option value="all">All Locations</option>
+                        <option value="library">Library</option>
+                        <option value="cafeteria">Cafeteria</option>
+                        <option value="sports">Sports Complex</option>
+                        <option value="classroom">Classroom Block</option>
+                        <option value="hostels">Hostels</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div class="section-header">
+                <h3 class="section-title">Recent Items</h3>
+            </div>
+
+            <div class="items-grid">
+                <!-- Recently Found Column -->
+                <div>
+                    <div class="column-header">
+                        <h4 class="column-title">
+                            <span class="badge-dot badge-found-dot"></span>
+                            RECENTLY FOUND
+                        </h4>
+                        <span class="item-count" id="foundCount">3 items</span>
+                    </div>
+                    <div class="cards-list" id="foundList">
+                        <div class="item-card" data-title="apple airpods" data-category="electronics" data-location="library">
+                            <div class="card-details-group">
+                                <img src="https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?auto=format&fit=crop&w=150&q=80" alt="Apple AirPods" class="item-img">
+                                <div class="item-info">
+                                    <h4>Apple AirPods</h4>
+                                    <p>Found in Library</p>
+                                    <p>Found on 12/23</p>
+                                </div>
+                            </div>
+                            <div class="status-indicator status-found" title="Found Item"></div>
+                        </div>
+
+                        <div class="item-card" data-title="key set" data-category="accessories" data-location="library">
+                            <div class="card-details-group">
+                                <img src="https://images.unsplash.com/photo-1584646098378-0874589d76b1?auto=format&fit=crop&w=150&q=80" alt="Key" class="item-img">
+                                <div class="item-info">
+                                    <h4>Key</h4>
+                                    <p>Found in Library</p>
+                                    <p>Found on 12/23</p>
+                                </div>
+                            </div>
+                            <div class="status-indicator status-found" title="Found Item"></div>
+                        </div>
+
+                        <div class="item-card" data-title="university id card" data-category="id" data-location="library">
+                            <div class="card-details-group">
+                                <img src="https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=150&q=80" alt="University ID" class="item-img">
+                                <div class="item-info">
+                                    <h4>University ID</h4>
+                                    <p>Found in Library</p>
+                                    <p>Found on 12/23</p>
+                                </div>
+                            </div>
+                            <div class="status-indicator status-found" title="Found Item"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recently Reported Lost Column -->
+                <div>
+                    <div class="column-header">
+                        <h4 class="column-title">
+                            <span class="badge-dot badge-lost-dot"></span>
+                            RECENTLY REPORTED LOST
+                        </h4>
+                        <span class="item-count" id="lostCount">3 items</span>
+                    </div>
+                    <div class="cards-list" id="lostList">
+                        <div class="item-card" data-title="red phone case" data-category="electronics" data-location="cafeteria">
+                            <div class="card-details-group">
+                                <img src="https://images.unsplash.com/photo-1580910051074-3eb694886505?auto=format&fit=crop&w=150&q=80" alt="Phone Case" class="item-img">
+                                <div class="item-info">
+                                    <h4>Phone case</h4>
+                                    <p>Lost at Cafeteria</p>
+                                    <p>Reported on 12/23</p>
+                                </div>
+                            </div>
+                            <div class="status-indicator status-lost" title="Lost Item"></div>
+                        </div>
+
+                        <div class="item-card" data-title="brown leather wallet" data-category="bags" data-location="cafeteria">
+                            <div class="card-details-group">
+                                <img src="https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=150&q=80" alt="Brown Wallet" class="item-img">
+                                <div class="item-info">
+                                    <h4>Brown Leather Wallet</h4>
+                                    <p>Lost at Cafeteria</p>
+                                    <p>Reported on 12/23</p>
+                                </div>
+                            </div>
+                            <div class="status-indicator status-lost" title="Lost Item"></div>
+                        </div>
+
+                        <div class="item-card" data-title="black leather wallet" data-category="bags" data-location="cafeteria">
+                            <div class="card-details-group">
+                                <img src="https://images.unsplash.com/photo-1517254798697-0775855237da?auto=format&fit=crop&w=150&q=80" alt="Leather Wallet" class="item-img">
+                                <div class="item-info">
+                                    <h4>Leather Wallet</h4>
+                                    <p>Lost at Cafeteria</p>
+                                    <p>Reported on 12/23</p>
+                                </div>
+                            </div>
+                            <div class="status-indicator status-lost" title="Lost Item"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Campus Facility Complaints & Maintenance Section -->
+        <section class="maintenance-section" id="maintenance">
+            <div class="maintenance-header">
+                <div class="maintenance-header-text">
+                    <h3>
+                        <i class="fa-solid fa-wrench"></i>
+                        Campus Facility Complaints & Maintenance
+                    </h3>
+                    <p>Report classroom AC failures, Wi-Fi outages, sanitation requests, or broken equipment.</p>
+                </div>
+                <button class="btn btn-complaint" onclick="openComplaintModal()">
+                    <i class="fa-solid fa-plus-circle"></i> Lodge Complaint
+                </button>
+            </div>
+
+            <div class="complaint-tabs-container">
+                <ul class="complaint-tabs">
+                    <li><button class="tab-btn active" onclick="filterComplaints('all', this)" id="tabAll">All Tickets (3)</button></li>
+                    <li><button class="tab-btn" onclick="filterComplaints('in_progress', this)">In Progress</button></li>
+                    <li><button class="tab-btn" onclick="filterComplaints('resolved', this)">Resolved</button></li>
+                </ul>
+            </div>
+
+            <div class="complaints-grid" id="complaintsList">
+                <!-- Dynamic Complaint Cards Loaded Here -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Lodge Complaint Modal -->
+    <div class="modal-overlay" id="complaintModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 class="modal-title" style="color: var(--text-main);">
+                    <i class="fa-solid fa-wrench" style="color: #f59e0b;"></i> Lodge Campus Complaint / Request Maintenance
+                </h3>
+                <button class="close-btn" onclick="closeComplaintModal()">&times;</button>
+            </div>
+            <form id="complaintForm" onsubmit="handleComplaintSubmit(event)">
+                <div class="modal-body">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Your Name / Student ID <span style="font-weight: 400; color: var(--text-muted); font-size: 0.75rem;">(Optional)</span></label>
+                            <input type="text" id="complaintStudentName" class="form-input" placeholder="e.g. John Doe (ID: 202401)">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Email Address <span>*</span></label>
+                            <input type="email" id="complaintEmail" class="form-input" placeholder="name@campus.edu" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Complaint Category <span>*</span></label>
+                            <select id="complaintCategory" class="filter-select" required>
+                                <option value="AC / Ventilation">AC / Ventilation</option>
+                                <option value="IT / Wi-Fi">IT / Wi-Fi</option>
+                                <option value="Cleaning / Sanitation">Cleaning / Sanitation</option>
+                                <option value="Electrical">Electrical</option>
+                                <option value="Furniture / Plumbing">Furniture / Plumbing</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Urgency Level <span>*</span></label>
+                            <select id="complaintUrgency" class="filter-select" required>
+                                <option value="low">Low Priority</option>
+                                <option value="medium" selected>Medium Priority</option>
+                                <option value="high">High Priority</option>
+                                <option value="urgent">Urgent</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Campus Area <span>*</span></label>
+                            <select id="complaintLocation" class="filter-select" required>
+                                <option value="Classroom Block">Classroom Block</option>
+                                <option value="Library">Library</option>
+                                <option value="Cafeteria">Cafeteria</option>
+                                <option value="Sports Complex">Sports Complex</option>
+                                <option value="Hostels">Hostels</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Room / Spot No. <span>*</span></label>
+                            <input type="text" id="complaintRoom" class="form-input" placeholder="e.g. Room 204, Lab 3" required>
+                        </div>
+
+                        <div class="form-group form-full">
+                            <label class="form-label">Subject / Short Title <span>*</span></label>
+                            <input type="text" id="complaintTitle" class="form-input" placeholder="e.g. AC cooling issue or dirty restroom..." required>
+                        </div>
+
+                        <div class="form-group form-full">
+                            <label class="form-label">Detailed Description <span>*</span></label>
+                            <textarea id="complaintDescription" class="form-textarea" rows="3" placeholder="Describe the problem clearly..." required></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeComplaintModal()">Cancel</button>
+                    <button type="submit" class="btn btn-complaint" id="submitComplaintBtn">Submit Complaint</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="reportModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">
+                    <i class="fa-solid fa-plus-circle"></i> Report Item
+                </h3>
+                <button class="close-btn" onclick="closeReportModal()">&times;</button>
+            </div>
+            <form id="reportForm" onsubmit="handleFormSubmit(event)">
+                <div class="modal-body">
+                    <input type="hidden" id="reportType" value="found">
+                    <div class="form-grid">
+                        <div class="form-group form-full">
+                            <label class="form-label">Item Title <span>*</span></label>
+                            <input type="text" id="itemTitle" class="form-input" placeholder="e.g. Blue Jansport Backpack" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Category <span>*</span></label>
+                            <select id="itemCategory" class="filter-select" required>
+                                <option value="electronics">Electronics</option>
+                                <option value="accessories">Keys & Accessories</option>
+                                <option value="id">IDs & Documents</option>
+                                <option value="bags">Bags & Wallets</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Location <span>*</span></label>
+                            <select id="itemLocation" class="filter-select" required>
+                                <option value="library">Library</option>
+                                <option value="cafeteria">Cafeteria</option>
+                                <option value="sports">Sports Complex</option>
+                                <option value="classroom">Classroom Block</option>
+                                <option value="hostels">Hostels</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Date <span>*</span></label>
+                            <input type="date" id="itemDate" class="form-input" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Contact Info <span>*</span></label>
+                            <input type="text" id="contactInfo" class="form-input" placeholder="Phone or email" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Student Name <span id="studentNameStar">*</span></label>
+                            <input type="text" id="studentName" class="form-input" placeholder="Enter student name">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Student ID <span id="studentIdStar">*</span></label>
+                            <input type="text" id="studentId" class="form-input" placeholder="Enter student ID">
+                        </div>
+
+                        <div class="form-group form-full">
+                            <label class="form-label">Image (URL or Upload File)</label>
+                            <input type="text" id="imageUrl" class="form-input" placeholder="Paste image URL..." oninput="previewImage(this.value)">
+                            <div style="margin-top: 0.5rem;">
+                                <input type="file" id="imageFile" accept="image/*" onchange="handleFileUpload(event)">
+                            </div>
+                            <div class="preview-img-box" id="imagePreviewBox">
+                                <span style="font-size: 0.8rem; color: var(--text-muted);">Image Preview</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group form-full">
+                            <label class="form-label">Description / Details</label>
+                            <textarea id="itemDescription" class="form-textarea" rows="3" placeholder="Provide extra details like color, brand, or specific marks..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeReportModal()">Cancel</button>
+                    <button type="submit" class="btn btn-found" id="submitBtn">Submit Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer id="contact">
+        <div class="footer-container">
+            <div class="footer-col">
+                <h5>Quick links</h5>
+                <ul class="footer-links">
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#dashboard">Live Dashboard</a></li>
+                    <li><a href="#">FAQs</a></li>
+                    <li><a href="#">Contact</a></li>
+                    <li><a href="#">My Reports (requires login)</a></li>
+                </ul>
+            </div>
+            <div class="footer-col contact-info">
+                <h5>Contact</h5>
+                <p><strong>Call:</strong> 0000000000</p>
+                <p><strong>Email:</strong> tschosie@gmail.com</p>
+            </div>
+        </div>
+        <div class="copyright">
+            &copy; 2026 Smart Campus Lost & Found Platform. All rights reserved.
+        </div>
+    </footer>
+
+    <script>
+        let currentImageSrc = '';
+
+        function filterItems() {
+            const searchValue = document.getElementById('searchInput').value.toLowerCase();
+            const categoryValue = document.getElementById('categoryFilter').value;
+            const locationValue = document.getElementById('locationFilter').value;
+
+            const cards = document.querySelectorAll('.item-card');
+
+            let visibleFound = 0;
+            let visibleLost = 0;
+
+            cards.forEach(card => {
+                const title = card.getAttribute('data-title') || '';
+                const category = card.getAttribute('data-category') || '';
+                const location = card.getAttribute('data-location') || '';
+
+                const matchesSearch = title.includes(searchValue);
+                const matchesCategory = categoryValue === 'all' || category === categoryValue;
+                const matchesLocation = locationValue === 'all' || location === locationValue;
+
+                if (matchesSearch && matchesCategory && matchesLocation) {
+                    card.style.display = 'flex';
+                    if (card.parentElement.id === 'foundList') visibleFound++;
+                    if (card.parentElement.id === 'lostList') visibleLost++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            document.getElementById('foundCount').textContent = visibleFound + ' items';
+            document.getElementById('lostCount').textContent = visibleLost + ' items';
+        }
+
+        function openReportModal(type) {
+            const modal = document.getElementById('reportModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const submitBtn = document.getElementById('submitBtn');
+            const reportType = document.getElementById('reportType');
+            
+            const studentNameInput = document.getElementById('studentName');
+            const studentIdInput = document.getElementById('studentId');
+            const studentNameStar = document.getElementById('studentNameStar');
+            const studentIdStar = document.getElementById('studentIdStar');
+
+            reportType.value = type;
+
+            if (type === 'found') {
+                modalTitle.innerHTML = '<i class="fa-solid fa-circle-check" style="color: var(--success);"></i> Report Found Item';
+                submitBtn.className = 'btn btn-found';
+                submitBtn.textContent = 'Submit Found Report';
+                
+                // Mandatory for found
+                studentNameInput.required = true;
+                studentIdInput.required = true;
+                if (studentNameStar) studentNameStar.style.display = 'inline';
+                if (studentIdStar) studentIdStar.style.display = 'inline';
+            } else {
+                modalTitle.innerHTML = '<i class="fa-solid fa-circle-xmark" style="color: var(--danger);"></i> Report Lost Item';
+                submitBtn.className = 'btn btn-lost';
+                submitBtn.textContent = 'Submit Lost Report';
+                
+                // Optional for lost (complaint)
+                studentNameInput.required = false;
+                studentIdInput.required = false;
+                if (studentNameStar) studentNameStar.style.display = 'none';
+                if (studentIdStar) studentIdStar.style.display = 'none';
+            }
+
+            // Set default date to today
+            document.getElementById('itemDate').valueAsDate = new Date();
+            modal.classList.add('active');
+        }
+
+        function closeReportModal() {
+            const modal = document.getElementById('reportModal');
+            modal.classList.remove('active');
+            document.getElementById('reportForm').reset();
+            currentImageSrc = '';
+            document.getElementById('imagePreviewBox').innerHTML = '<span style="font-size: 0.8rem; color: var(--text-muted);">Image Preview</span>';
+        }
+
+        function previewImage(url) {
+            if (url.trim() !== '') {
+                currentImageSrc = url;
+                document.getElementById('imagePreviewBox').innerHTML = `<img src="${url}" onerror="this.src='https://placehold.co/150x150/e2e8f0/64748b?text=No+Image'">`;
+            }
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentImageSrc = e.target.result;
+                    document.getElementById('imagePreviewBox').innerHTML = `<img src="${currentImageSrc}">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Submitting...';
+            submitBtn.disabled = true;
+
+            const payload = {
+                report_type: document.getElementById('reportType').value,
+                title: document.getElementById('itemTitle').value.trim(),
+                category: document.getElementById('itemCategory').value,
+                location: document.getElementById('itemLocation').value,
+                date_reported: document.getElementById('itemDate').value,
+                contact_info: document.getElementById('contactInfo').value,
+                student_name: document.getElementById('studentName').value,
+                student_id: document.getElementById('studentId').value,
+                image_url: document.getElementById('imageUrl').value || currentImageSrc,
+                description: document.getElementById('itemDescription').value
+            };
+
+            try {
+                const response = await fetch('/api/items', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    closeReportModal();
+                    await loadItems(); // Refresh the list
+                } else {
+                    alert('Failed to submit report. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error submitting form:', error);
+                alert('An error occurred. Make sure the backend server is running.');
+            } finally {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+
+        async function loadItems() {
+            try {
+                const response = await fetch('/api/items');
+                if (!response.ok) throw new Error('Failed to fetch items');
+                
+                const items = await response.json();
+                
+                const foundList = document.getElementById('foundList');
+                const lostList = document.getElementById('lostList');
+                
+                // Keep the structural HTML but we will replace cards
+                foundList.innerHTML = '';
+                lostList.innerHTML = '';
+
+                items.forEach(item => {
+                    const fallbackImg = item.image_url || 'https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?auto=format&fit=crop&w=150&q=80';
+                    const isFound = item.report_type === 'found';
+                    const locationText = item.location.charAt(0).toUpperCase() + item.location.slice(1);
+                    const formattedDate = new Date(item.date_reported).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' });
+                    
+                    const actionText = isFound ? `Found in ${locationText}` : `Lost at ${locationText}`;
+                    const dateText = isFound ? `Found on ${formattedDate}` : `Reported on ${formattedDate}`;
+                    const statusClass = isFound ? 'status-found' : 'status-lost';
+
+                    const card = document.createElement('div');
+                    card.className = 'item-card';
+                    card.setAttribute('data-title', item.title.toLowerCase());
+                    card.setAttribute('data-category', item.category);
+                    card.setAttribute('data-location', item.location);
+
+                    card.innerHTML = `
+                        <div class="card-details-group">
+                            <img src="${fallbackImg}" alt="${item.title}" class="item-img" onerror="this.src='https://placehold.co/150x150/e2e8f0/64748b?text=Item'">
+                            <div class="item-info">
+                                <h4>${item.title}</h4>
+                                <p>${actionText}</p>
+                                <p>${dateText}</p>
+                            </div>
+                        </div>
+                        <div class="status-indicator ${statusClass}" title="${isFound ? 'Found Item' : 'Lost Item'}"></div>
+                    `;
+
+                    if (isFound) {
+                        foundList.appendChild(card);
+                    } else {
+                        lostList.appendChild(card);
+                    }
+                });
+
+                filterItems(); // Re-apply filters if any
+            } catch (error) {
+                console.error('Error loading items:', error);
+            }
+        }
+
+        // Load items & complaints on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadItems();
+            loadComplaints();
+        });
+
+        let allComplaintsData = [];
+
+        function openComplaintModal() {
+            const modal = document.getElementById('complaintModal');
+            modal.classList.add('active');
+        }
+
+        function closeComplaintModal() {
+            const modal = document.getElementById('complaintModal');
+            modal.classList.remove('active');
+            document.getElementById('complaintForm').reset();
+        }
+
+        async function handleComplaintSubmit(e) {
+            e.preventDefault();
+
+            const submitBtn = document.getElementById('submitComplaintBtn');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Submitting...';
+            submitBtn.disabled = true;
+
+            const payload = {
+                student_name: document.getElementById('complaintStudentName').value.trim() || 'Anonymous Student',
+                email: document.getElementById('complaintEmail').value.trim(),
+                category: document.getElementById('complaintCategory').value,
+                urgency: document.getElementById('complaintUrgency').value,
+                location: document.getElementById('complaintLocation').value,
+                room_number: document.getElementById('complaintRoom').value.trim(),
+                title: document.getElementById('complaintTitle').value.trim(),
+                description: document.getElementById('complaintDescription').value.trim()
+            };
+
+            try {
+                const response = await fetch('/api/complaints', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    closeComplaintModal();
+                    await loadComplaints();
+                    alert(`Complaint ${data.complaint ? data.complaint.ticket_number : ''} lodged successfully!\nNotification dispatched to Administrative Email ID: ${data.admin_email || 'admin@campus.edu'}`);
+                } else {
+                    alert('Failed to submit complaint. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error submitting complaint:', error);
+                alert('An error occurred submitting complaint.');
+            } finally {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+
+        function getCategoryIcon(category) {
+            const cat = (category || '').toLowerCase();
+            if (cat.includes('ac') || cat.includes('ventilation')) return 'fa-snowflake';
+            if (cat.includes('cleaning') || cat.includes('sanitation')) return 'fa-broom';
+            if (cat.includes('it') || cat.includes('wi-fi') || cat.includes('wifi')) return 'fa-wifi';
+            if (cat.includes('electrical')) return 'fa-bolt';
+            if (cat.includes('furniture') || cat.includes('plumbing')) return 'fa-wrench';
+            return 'fa-triangle-exclamation';
+        }
+
+        async function loadComplaints() {
+            try {
+                const response = await fetch('/api/complaints');
+                if (!response.ok) throw new Error('Failed to fetch complaints');
+                
+                allComplaintsData = await response.json();
+                renderComplaints('all');
+            } catch (error) {
+                console.error('Error loading complaints:', error);
+            }
+        }
+
+        function filterComplaints(statusFilter, btnEl) {
+            if (btnEl) {
+                document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                btnEl.classList.add('active');
+            }
+            renderComplaints(statusFilter);
+        }
+
+        function renderComplaints(statusFilter) {
+            const container = document.getElementById('complaintsList');
+            container.innerHTML = '';
+
+            let filtered = allComplaintsData;
+            if (statusFilter !== 'all') {
+                filtered = allComplaintsData.filter(c => c.status === statusFilter);
+            }
+
+            const totalCount = allComplaintsData.length;
+            const tabAll = document.getElementById('tabAll');
+            if (tabAll) tabAll.textContent = `All Tickets (${totalCount})`;
+
+            filtered.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'complaint-card';
+
+                const iconClass = getCategoryIcon(item.category);
+                const urgencyUpper = (item.urgency || 'medium').toUpperCase();
+                const statusFormatted = (item.status || 'in_progress').replace('_', ' ').toUpperCase();
+                
+                let formattedDate = '12/23';
+                if (item.date_reported) {
+                    const parts = item.date_reported.split('-');
+                    if (parts.length === 3) {
+                        formattedDate = `${parseInt(parts[1])}/${parseInt(parts[2])}`;
+                    }
+                }
+
+                card.innerHTML = `
+                    <div>
+                        <div class="ticket-top-row">
+                            <span class="ticket-number">${item.ticket_number}</span>
+                            <div class="badge-group">
+                                <span class="badge-urgency badge-${item.urgency}">${urgencyUpper}</span>
+                                <span class="badge-status badge-status-${item.status}">${statusFormatted}</span>
+                            </div>
+                        </div>
+                        <div class="ticket-body" style="margin-top: 0.75rem;">
+                            <h4><i class="fa-solid ${iconClass}"></i> ${item.title}</h4>
+                            <p>${item.description}</p>
+                        </div>
+                    </div>
+                    <div class="ticket-meta">
+                        <span>Category: <strong>${item.category}</strong></span>
+                        <span>Location: <strong>${item.location} (${item.room_number})</strong></span>
+                        <span>Reported By: <strong>${item.student_name}</strong></span>
+                        <span>Date: <strong>${formattedDate}</strong></span>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>
